@@ -1,28 +1,32 @@
-import * as cdk from '@aws-cdk/core';
-import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
+import * as cdk from "@aws-cdk/core";
+import { Code, Function, Runtime, RuntimeFamily } from "@aws-cdk/aws-lambda";
 import * as path from "path";
 
-
-export class LambdaServiceStack extends cdk.Stack {
+export class HfLambdaServiceStack extends cdk.Stack {
   readonly serviceLambda: {
-    function: Function
+    function: Function;
   };
-
 
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    this.serviceLambda = this.createLambdaFunction();   
-
+    this.serviceLambda = this.createLambdaFunction();
   }
-  
+
   private createLambdaFunction() {
     const handler = new Function(this, "LambdaService", {
-      code: Code.fromAsset(path.join(__dirname, "..", "..", "rust-service/target/lambda/hello")),
-      runtime: Runtime.PROVIDED_AL2,
+      code: Code.fromAsset(
+        path.join(
+          __dirname,
+          "..",
+          "..",
+          "rust-service/target/lambda/hfmiddleburg",
+        ),
+      ),
+      runtime: new Runtime('provided.al2023', RuntimeFamily.OTHER),
       handler: "does_not_matter",
-      functionName: "LambdaService"
+      functionName: "HfMiddleburgApiLambda",
     });
 
-    return {function: handler}; 
+    return { function: handler };
   }
 }

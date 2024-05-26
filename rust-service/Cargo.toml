@@ -1,5 +1,5 @@
 [package]
-name = "rust_service"
+name = "hfmiddleburgbe"
 version = "0.1.0"
 edition = "2021"
 
@@ -22,9 +22,10 @@ lambda_http = "0.7"
 lambda_runtime = "0.7"
 tokio = { version = "1", features = ["macros"] }
 tracing = { version = "0.1", features = ["log"] }
-tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+  "fmt",
+] }
 
 [[bin]]
-name = "hello"
-path = "src/http_handler.rs"
-
+name = "hfmiddleburg"
+path = "src/handler.rs"
