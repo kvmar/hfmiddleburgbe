@@ -1,6 +1,6 @@
 import * as cdk from "@aws-cdk/core";
 import { HfLambdaServiceStack } from "./lambda-infra-stack";
-import { LambdaRestApi, Cors, ApiKey, Period } from "@aws-cdk/aws-apigateway";
+import { LambdaRestApi, Cors, ApiKey, Period, LambdaIntegration } from "@aws-cdk/aws-apigateway";
 
 export class HfApiGatewayStack extends cdk.Stack {
   readonly apiGatewayResources: {
@@ -47,17 +47,23 @@ export class HfApiGatewayStack extends cdk.Stack {
     });
 
     usagePlan.addApiKey(apiKey);
-
+    const CORS_HEADERS = ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token',
+      'Access-Control-Allow-Origin', 'Access-Control-Allow-Methods']
     const emailResource = restApi.root.addResource("email", {
-      defaultMethodOptions: {
-        apiKeyRequired: true,
-        requestParameters: {
-          "method.request.header.x-api-key": true,
-        },
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS, // this is also the default
+        allowHeaders: CORS_HEADERS,
+        statusCode: 200
       },
     });
 
-    emailResource.addMethod("POST");
+    emailResource.addMethod("POST", undefined, {
+      apiKeyRequired: true,
+      requestParameters: {
+        "method.request.header.X-Api-key": true,
+      },
+    });
 
     usagePlan.addApiStage({ stage: restApi.deploymentStage });
   }

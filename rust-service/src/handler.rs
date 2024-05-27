@@ -4,16 +4,17 @@ use lambda_http::{run, service_fn, Body, Error, Request, Response};
 /// Write your code inside it.
 /// There are some code example in the following URLs:
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
-async fn function_handler(_: Request) -> Result<Response<Body>, Error> {
+async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     // Return something that implements IntoResponse.
     // It will be serialized to the right response event automatically by the runtime
     let config = aws_config::load_from_env().await;
     let client = aws_sdk_sns::Client::new(&config);
-
+    let body = event.body();
+    let event_string = std::str::from_utf8(body).expect("non utf-8");
     let rsp = client
         .publish()
         .topic_arn(std::env::var("EMAIL_SNS_TOPIC").expect("Expected SNS topic env variable"))
-        .message("hello sns!")
+        .message(String::from(event_string))
         .send()
         .await?;
 
@@ -21,9 +22,10 @@ async fn function_handler(_: Request) -> Result<Response<Body>, Error> {
 
     let resp = Response::builder()
         .status(200)
-        .header("content-type", "text/html")
-        .body(Body::Text(String::from("Hello, World!")))
-        .map_err(Box::new)?;
+        .header("Content-Type", "text/plain")
+        .header("Access-Control-Allow-Origin", "*")
+        .body(Body::Text(String::from("{'success'}")))
+        .expect("Unexpected exception occured");
     Ok(resp)
 }
 
