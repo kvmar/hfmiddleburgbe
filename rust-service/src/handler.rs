@@ -7,6 +7,18 @@ use lambda_http::{run, service_fn, Body, Error, Request, Response};
 async fn function_handler(_: Request) -> Result<Response<Body>, Error> {
     // Return something that implements IntoResponse.
     // It will be serialized to the right response event automatically by the runtime
+    let config = aws_config::load_from_env().await;
+    let client = aws_sdk_sns::Client::new(&config);
+
+    let rsp = client
+        .publish()
+        .topic_arn(std::env::var("EMAIL_SNS_TOPIC").expect("Expected SNS topic env variable"))
+        .message("hello sns!")
+        .send()
+        .await?;
+
+    println!("Published message: {:?}", rsp);
+
     let resp = Response::builder()
         .status(200)
         .header("content-type", "text/html")
